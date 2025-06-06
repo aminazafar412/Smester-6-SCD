@@ -1,30 +1,36 @@
-name: Deploy Static Site to GitHub Pages
+name: Flask To-Do CI
 
 on:
   push:
-    branches: [main]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deploy:
+  build:
+
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Upload site to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./   # or ./public if you have it
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Lint Python Code
+      run: |
+        pip install flake8
+        flake8 app.py
+
+    - name: Run Flask App Test (basic)
+      run: |
+        echo "Running test: App file syntax check"
+        python -m py_compile app.py
